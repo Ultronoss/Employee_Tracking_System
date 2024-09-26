@@ -1,0 +1,49 @@
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  DATABASE_URL: "postgresql://user:password@db:5432/db_name"  # Set according to your configuration
+  MONGODB_URL: "mongodb://db:27017"                           # Set according to your configuration
+
+services:
+  - postgres:latest
+  - mongo:latest
+
+before_script:
+  - echo "Setting up the environment..."
+  - pip install -r requirements.txt
+
+build:
+  stage: build
+  script:
+    - echo "Building the application..."
+    - docker build -t employee-tracking-app .
+
+test:
+  stage: test
+  script:
+    - echo "Running tests..."
+    - pytest tests/  # Adjust to the directory where your tests are located
+
+deploy_staging:
+  stage: deploy
+  environment:
+    name: staging
+    url: http://staging.example.com  # Replace with your staging URL
+  script:
+    - echo "Deploying to staging environment..."
+    - docker-compose up -d  # Adjust according to your deployment strategy
+
+deploy_production:
+  stage: deploy
+  environment:
+    name: production
+    url: http://production.example.com  # Replace with your production URL
+  only:
+    - master  # Deploy to production only when changes are made to the master branch
+  script:
+    - echo "Deploying to production environment..."
+    - docker-compose up -d  # Adjust according to your deployment strategy
+
